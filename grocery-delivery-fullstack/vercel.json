@@ -5,16 +5,12 @@
       "src": "client/package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "dist" }
-    },
-    {
-      "src": "server/server.ts",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/server/server.ts"
+      "dest": "/api/[...all].ts"
     },
     {
       "handle": "filesystem"
@@ -25,3 +21,4 @@
     }
   ]
 }
+
