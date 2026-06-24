@@ -42,6 +42,8 @@ app.use("/api/addresses", addressRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/delivery", deliveryPartnerRouter);
 
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+
 // Error handling
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
     console.error(error);
@@ -52,6 +54,11 @@ if (!process.env.VERCEL) {
     app.listen(port, () => {
         console.log(`Server is running at http://localhost:${port}`);
     });
+}
+
+// Vercel handler export
+export async function handler(req: VercelRequest, res: VercelResponse) {
+    return app(req, res);
 }
 
 export default app;
