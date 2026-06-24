@@ -3,21 +3,35 @@ import Stripe from "stripe";
 import { prisma } from "../config/prisma.js";
 import { inngest } from "../inngest/index.js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const getStripe = () => {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (!secretKey) {
+        throw new Error("Missing STRIPE_SECRET_KEY environment variable");
+    }
+    return new Stripe(secretKey);
+};
 
 export const stripeWebhook = async (request: Request, response: Response) => {
+    if (!endpointSecret) {
+        console.error("Stripe webhook is not configured: missing STRIPE_WEBHOOK_SECRET");
+        return response.status(500).json({ message: "Stripe webhook is not configured" });
+    }
+
+    const signature = request.headers["stripe-signature"];
+    if (!signature) {
+        return response.status(400).json({ message: "Missing Stripe signature header" });
+    }
+
     let event;
-    if (endpointSecret) {
-        // Get the signature sent by Stripe
-        const signature = request.headers["stripe-signature"];
-        try {
-            event = stripe.webhooks.constructEvent(request.body, signature as string, endpointSecret);
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            console.log(`⚠️ Webhook signature verification failed.`, message);
-            return response.sendStatus(400);
-        }
+    const stripe = getStripe();
+    try {
+        event = stripe.webhooks.constructEvent(request.body, signature as string, endpointSecret);
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.log(`⚠️ Webhook signature verification failed.`, message);
+        return response.sendStatus(400);
+    }
 
         // Handle the event
         switch (event.type) {
@@ -79,5 +93,4 @@ export const stripeWebhook = async (request: Request, response: Response) => {
 
         // Return a response to acknowledge receipt of the event
         response.json({ received: true });
-    }
 };
