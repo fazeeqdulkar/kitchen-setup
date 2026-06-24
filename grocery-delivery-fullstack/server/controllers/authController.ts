@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 // Generate JWT token
@@ -30,7 +30,7 @@ export const register = async (req: Request, res: Response) => {
         return res.status(400).json({ message: "User already exists with this email" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = bcrypt.hashSync(password, 10);
 
     const user = await prisma.user.create({
         data: { name, email: email.toLowerCase(), password: hashedPassword },
@@ -60,7 +60,7 @@ export const login = async (req: Request, res: Response) => {
         return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = bcrypt.compareSync(password, user.password);
     if (!isMatch) {
         return res.status(401).json({ message: "Invalid email or password" });
     }

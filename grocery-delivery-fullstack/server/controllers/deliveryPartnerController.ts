@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const generateToken = (id: string) => {
@@ -30,7 +30,7 @@ export const loginPartner = async (req: Request, res: Response) => {
         return res.status(403).json({ message: "Your account has been deactivated" });
     }
 
-    const isMatch = await bcrypt.compare(password, partner.password);
+    const isMatch = bcrypt.compareSync(password, partner.password);
     if (!isMatch) {
         return res.status(401).json({ message: "Invalid email or password" });
     }

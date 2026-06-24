@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 // get admin dashboard data
 export const getAdminStats = async (req: Request, res: Response) => {
@@ -38,7 +38,7 @@ export const createDeliveryPartner = async (req: Request, res: Response) => {
         return;
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = bcrypt.hashSync(password, 10);
 
     const partner = await prisma.deliveryPartner.create({
         data: { name, email: email.toLowerCase(), password: hashedPassword, phone, vehicleType },
