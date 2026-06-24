@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import app from "../server";
+import handler from "../server/index.js";
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
-  return app(req, res);
+export default function (req: VercelRequest, res: VercelResponse) {
+  return handler(req, res);
 }
